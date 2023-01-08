@@ -6,7 +6,7 @@ import sharedStyles from "../config/sharedStyles";
 import utils from "../config/utils";
 import colors from "../config/colors";
 
-/*function renderCard({ item }) {
+function renderCard({ item }) {
     return (
         <Card style={styles.card} mode="outlined">
             <Card.Title
@@ -37,11 +37,10 @@ function updateData(d) {
     }
 
     console.log(currTime + " " + currTime.charAt(currTime.length - 3));
-}*/
+}
 
 function ScheduleScreen(props) {
-
-    /*const [data, setData] = useState([]);
+    const [data, setData] = useState([]);
     const [isLoading, setLoading] = useState(false);
     const MINUTE_MS = 60000;
 
@@ -176,7 +175,7 @@ function ScheduleScreen(props) {
     //     }
 
     //     console.log(currTime + " " + currTime.charAt(currTime.length - 3));
-    // };*/
+    // };
 
     return (
         <View style={sharedStyles.screen}>
@@ -192,18 +191,18 @@ function ScheduleScreen(props) {
                 />
             </Appbar.Header>
 
-            {<View style={{ alignItems: "center", flex: 1, justifyContent: "center" }}>
+            {/* <View style={{ alignItems: "center", flex: 1, justifyContent: "center" }}>
                 <Text style={{ fontSize: 24 }}>Coming soon!</Text>
-            </View> }
+            </View> */}
 
-            {/*<FlatList
+            <FlatList
                 data={data}
                 renderItem={renderCard}
                 refreshing={isLoading}
                 onRefresh={handleRefresh}
                 showsVerticalScrollIndicator={false}
                 style={sharedStyles.mainContainer}
-            />*/}
+            />
         </View>
     );
 }
