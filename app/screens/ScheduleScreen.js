@@ -103,30 +103,6 @@ function ScheduleScreen(props) {
         },
     ];
 
-    // const renderCard = ({ item }) => {
-    //     return (
-    //         <Card style={styles.card} mode="outlined">
-    //             <Card.Title
-    //                 title={item.name}
-    //                 titleStyle={styles.cardTitle}
-    //                 titleVariant="titleLarge"
-    //                 subtitle={`${item.date}, ${item.time}`}
-    //                 left={() => (
-    //                     <Avatar.Text
-    //                         size={40}
-    //                         style={styles.notFinishedAvatar}
-    //                         labelStyle={styles.weekdayAvatar}
-    //                         label={item.weekday}
-    //                     />
-    //                 )}
-    //             />
-    //             <Card.Content>
-    //                 <Paragraph>{item.location}</Paragraph>
-    //             </Card.Content>
-    //         </Card>
-    //     );
-    // };
-
     const handleRefresh = () => {
         // let API_URL = "https://jsonplaceholder.typicode.com/posts";
         setLoading(true);
@@ -168,15 +144,6 @@ function ScheduleScreen(props) {
         };
     }, []);
 
-    // const updateData = (d) => {
-    //     const currTime = utils.generateTime(d);
-    //     if (currTime === "12:00am") {
-    //         console.log("New Day schedule change");
-    //     }
-
-    //     console.log(currTime + " " + currTime.charAt(currTime.length - 3));
-    // };
-
     return (
         <View style={sharedStyles.screen}>
             <Appbar.Header mode="small">
@@ -190,10 +157,6 @@ function ScheduleScreen(props) {
                     onPress={() => console.log("add schedule")}
                 />
             </Appbar.Header>
-
-            {/* <View style={{ alignItems: "center", flex: 1, justifyContent: "center" }}>
-                <Text style={{ fontSize: 24 }}>Coming soon!</Text>
-            </View> */}
 
             <FlatList
                 data={data}
