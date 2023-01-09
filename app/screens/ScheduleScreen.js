@@ -1,7 +1,16 @@
 import moment from "moment";
 import React, { useEffect, useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
-import { Appbar, Avatar, Card, Paragraph, Text } from "react-native-paper";
+import { FlatList, StyleSheet, View, Modal } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+    Appbar,
+    Avatar,
+    Card,
+    Paragraph,
+    Text,
+    Button,
+    TextInput,
+} from "react-native-paper";
 
 import sharedStyles from "../config/sharedStyles";
 import utils from "../config/utils";
@@ -51,6 +60,9 @@ function renderCard({ item }) {
 function ScheduleScreen(props) {
     const [data, setData] = useState([]);
     const MINUTE_MS = 60000;
+    const [scheduleModalVisible, setModalVisible] = useState(false);
+    const [subject, setSubject] = useState("");
+    const [classCode, setClassCode] = useState("");
 
     const cards = [
         {
@@ -135,8 +147,12 @@ function ScheduleScreen(props) {
             console.log("New Day schedule change");
         }
         setData([...data, ...cards]);
-        console.log("Data length: " + data.length);
+
         console.log(currTime + " " + currTime.charAt(currTime.length - 3));
+    }
+
+    function addData() {
+        console.log("Hello");
     }
 
     return (
@@ -149,9 +165,42 @@ function ScheduleScreen(props) {
                 />
                 <Appbar.Action
                     icon="plus"
-                    onPress={() => console.log("add schedule")}
+                    onPress={() => setModalVisible(true)}
                 />
             </Appbar.Header>
+            <Modal
+                transparent={true}
+                visible={scheduleModalVisible}
+                onRequestClose={() => {
+                    setModalVisible(!scheduleModalVisible);
+                }}
+                onShow={() => console.log("Add screen opened!")}
+            >
+                <View style={sharedStyles.screen}>
+                    <View style={styles.modal}>
+                        <Button
+                            icon="close"
+                            mode="contained"
+                            onPress={() =>
+                                setModalVisible(!scheduleModalVisible)
+                            }
+                        />
+                        <TextInput
+                            label="Subject"
+                            value={subject}
+                            onChangeText={(subject) => setSubject(subject)}
+                        />
+                        <TextInput
+                            label="Class"
+                            value={classCode}
+                            onChangeText={(classCode) =>
+                                setClassCode(classCode)
+                            }
+                        />
+                    </View>
+                </View>
+            </Modal>
+
             <FlatList
                 data={data}
                 renderItem={renderCard}
@@ -174,13 +223,16 @@ const styles = StyleSheet.create({
         fontWeight: sharedStyles.bold,
     },
     finishedAvatar: {
-        backgroundColor: colors.green,
+        backgroundColor: colors.greenContainer,
     },
     inProgressAvatar: {
         backgroundColor: colors.onYellowContainer,
     },
     notFinishedAvatar: {
         backgroundColor: colors.yellow,
+    },
+    modal: {
+        backgroundColor: colors.background,
     },
 });
 
