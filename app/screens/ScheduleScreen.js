@@ -1,6 +1,6 @@
 import moment from "moment";
 import React, { useEffect, useState } from "react";
-import { FlatList, StyleSheet, View, Modal } from "react-native";
+import { FlatList, StyleSheet, View, Modal, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
     Appbar,
@@ -9,6 +9,7 @@ import {
     Paragraph,
     Text,
     Button,
+    IconButton,
     TextInput,
 } from "react-native-paper";
 
@@ -63,6 +64,7 @@ function ScheduleScreen(props) {
     const [scheduleModalVisible, setModalVisible] = useState(false);
     const [subject, setSubject] = useState("");
     const [classCode, setClassCode] = useState("");
+    const [section, setSection] = useState("");
 
     const cards = [
         {
@@ -151,8 +153,31 @@ function ScheduleScreen(props) {
         console.log(currTime + " " + currTime.charAt(currTime.length - 3));
     }
 
-    function addData() {
-        console.log("Hello");
+    function addData(subject, classCode, section) {
+        console.log(subject + " " + classCode + " " + section);
+        fetch(
+            "https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?sess=1231&level=under&subject=" +
+                subject +
+                "&cournum=" +
+                classCode
+        )
+            .then((res) => res.text())
+            .then((res) => {
+                let re =
+                    /TR><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><.*?><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD>/gs;
+
+                const data = [...res.matchAll(re)].map((course) =>
+                    course.slice(1)
+                );
+                console.log(data);
+            });
+    }
+
+    function closeModal() {
+        setModalVisible(!scheduleModalVisible);
+        setSubject("");
+        setClassCode("");
+        setSection("");
     }
 
     return (
@@ -171,34 +196,61 @@ function ScheduleScreen(props) {
             <Modal
                 transparent={true}
                 visible={scheduleModalVisible}
-                onRequestClose={() => {
-                    setModalVisible(!scheduleModalVisible);
-                }}
-                onShow={() => console.log("Add screen opened!")}
+                onRequestClose={() => closeModal()}
             >
-                <View style={sharedStyles.screen}>
+                <Pressable
+                    onPress={() => closeModal()}
+                    style={{ flex: 1, backgroundColor: "transparent" }}
+                >
                     <View style={styles.modal}>
-                        <Button
-                            icon="close"
-                            mode="contained"
-                            onPress={() =>
-                                setModalVisible(!scheduleModalVisible)
-                            }
-                        />
-                        <TextInput
-                            label="Subject"
-                            value={subject}
-                            onChangeText={(subject) => setSubject(subject)}
-                        />
-                        <TextInput
-                            label="Class"
-                            value={classCode}
-                            onChangeText={(classCode) =>
-                                setClassCode(classCode)
-                            }
-                        />
+                        <View style={styles.modalHeader}>
+                            <View style={styles.modalHeaderContent}>
+                                <Text style={{ fontSize: 24 }}>
+                                    Add new course
+                                </Text>
+                            </View>
+                            <IconButton
+                                icon="close"
+                                iconColor="red"
+                                style={styles.button}
+                                onPress={() => closeModal()}
+                            />
+                        </View>
+                        <View style={styles.modalContent}>
+                            <TextInput
+                                label="Subject"
+                                value={subject}
+                                style={styles.inputBox}
+                                onChangeText={(subject) =>
+                                    setSubject(subject.toUpperCase())
+                                }
+                            />
+                            <TextInput
+                                label="Class"
+                                value={classCode}
+                                style={styles.inputBox}
+                                onChangeText={(classCode) =>
+                                    setClassCode(classCode)
+                                }
+                            />
+                            <TextInput
+                                label="Section"
+                                value={section}
+                                style={styles.inputBox}
+                                onChangeText={(section) => setSection(section)}
+                            />
+                            <Button
+                                mode="contained"
+                                onPress={() => {
+                                    addData(subject, classCode, section);
+                                    closeModal();
+                                }}
+                            >
+                                Submit
+                            </Button>
+                        </View>
                     </View>
-                </View>
+                </Pressable>
             </Modal>
 
             <FlatList
@@ -232,7 +284,41 @@ const styles = StyleSheet.create({
         backgroundColor: colors.yellow,
     },
     modal: {
+        margin: 50,
+        marginTop: 110,
+        borderRadius: 20,
+        paddingLeft: 35,
+        paddingRight: 35,
+        paddingBottom: 35,
         backgroundColor: colors.background,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalHeader: {
+        flexDirection: "row",
+    },
+    modalHeaderContent: {
+        flexGrow: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalContent: {
+        flexGrow: 1,
+        alignContent: "space-around",
+    },
+    button: {
+        alignSelf: "flex-end",
+        paddingLeft: 5,
+        paddingRight: 5,
+    },
+    inputBox: {
+        marginBottom: 15,
     },
 });
 
