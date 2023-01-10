@@ -164,7 +164,7 @@ function ScheduleScreen(props) {
             .then((res) => res.text())
             .then((res) => {
                 let re =
-                    /TR><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><.*?><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD>/gs;
+                    /TR><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><.*?><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD>/gs;
 
                 const data = [...res.matchAll(re)].map((course) =>
                     course.slice(1)
