@@ -65,6 +65,7 @@ function ScheduleScreen(props) {
     const [subject, setSubject] = useState("");
     const [classCode, setClassCode] = useState("");
     const [section, setSection] = useState("");
+    const [classListView, setClassListView] = useState(<View />);
 
     const cards = [
         {
