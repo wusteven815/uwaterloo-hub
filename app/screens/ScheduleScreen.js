@@ -63,27 +63,13 @@ function ScheduleScreen(props) {
     // Data states:
     const [data, setData] = useState([]);
     const MINUTE_MS = 60000;
+    let classObject = {};
 
     // Add class modal states:
     const [scheduleModalVisible, setModalVisible] = useState(false);
     const [subject, setSubject] = useState("");
     const [classCode, setClassCode] = useState("");
-    const [submitButton, setSubmitButton] = useState(
-        <Button
-            mode="contained"
-            onPress={() => {
-                console.log(
-                    "Subject on submit is: " +
-                        subject +
-                        " and code on submit is: " +
-                        classCode
-                );
-                addData(subject, classCode);
-            }}
-        >
-            Submit1
-        </Button>
-    );
+    const [submitOff, setSubmitOff] = useState(true);
 
     // Class dropdown list states:
     // This the the most stupid thing ever made who designed this dumb dropdown menu component
@@ -180,6 +166,7 @@ function ScheduleScreen(props) {
 
     function addData(subjectD, classCodeD) {
         console.log(subjectD + " " + classCodeD);
+        setSubmitOff(false);
         fetch(
             "https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?sess=1231&level=under&subject=" +
                 subjectD +
@@ -189,7 +176,7 @@ function ScheduleScreen(props) {
             .then((res) => res.text())
             .then((res) => {
                 let re =
-                    /TR><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><.*?><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD>/gs;
+                    /TR><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">LEC (\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><.*?><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD>/gs;
 
                 const arrData = [...res.matchAll(re)].map((course) =>
                     course.slice(1)
@@ -206,43 +193,28 @@ function ScheduleScreen(props) {
                 });
                 console.log(classData);
                 setItems(classData);
-            })
-            .catch((err) => console.log(err));
-
-        setSubmitButton(
-            <Button
-                mode="contained"
-                onPress={() => {
-                    console.log(value);
-                    closeModal();
-                }}
-            >
-                Submit2
-            </Button>
-        );
+            });
     }
 
     function closeModal() {
-        setModalVisible(false);
+        // resets the entries
         setSubject("");
         setClassCode("");
+
+        // resets the class/dropdown list entries
         setItems([]);
         setValue(null);
         setOpen(false);
-        setSubmitButton(
-            <Button
-                mode="contained"
-                onPress={() => addData(subject, classCode)}
-            >
-                Submit1
-            </Button>
-        );
         console.log(
             "Subject on close is: " +
                 subject +
                 " and code on close is: " +
                 classCode
         );
+
+        // resets the submit button, and closes the modal
+        setSubmitOff(true);
+        setModalVisible(false);
     }
 
     return (
@@ -308,8 +280,8 @@ function ScheduleScreen(props) {
                                 open={open}
                                 value={value}
                                 items={items}
-                                onSelectItem={(item1) => {
-                                    console.log("Item: " + item1);
+                                onSelectItem={(item) => {
+                                    console.log(item);
                                 }}
                                 onChangeValue={(value) => {
                                     console.log("Value: " + value);
@@ -319,7 +291,39 @@ function ScheduleScreen(props) {
                                 setItems={setItems}
                                 //closeAfterSelecting={true}
                             />
-                            {submitButton}
+                            <View
+                                style={{
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <Button
+                                    mode="contained"
+                                    disabled={!submitOff}
+                                    onPress={() => {
+                                        console.log(
+                                            "Subject on submit is: " +
+                                                subject +
+                                                " and code on submit is: " +
+                                                classCode
+                                        );
+                                        addData(subject, classCode);
+                                    }}
+                                >
+                                    Submit1
+                                </Button>
+                                <Button
+                                    mode="contained"
+                                    disabled={submitOff}
+                                    onPress={() => {
+                                        console.log(value);
+                                        console.log(classObject);
+                                        closeModal();
+                                    }}
+                                >
+                                    Submit2
+                                </Button>
+                            </View>
                         </View>
                     </View>
                 </Pressable>
