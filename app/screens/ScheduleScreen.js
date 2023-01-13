@@ -63,13 +63,27 @@ function ScheduleScreen(props) {
     // Data states:
     const [data, setData] = useState([]);
     const MINUTE_MS = 60000;
-    let submitToggle = true;
-    let chosenClass = "";
 
     // Add class modal states:
     const [scheduleModalVisible, setModalVisible] = useState(false);
     const [subject, setSubject] = useState("");
     const [classCode, setClassCode] = useState("");
+    const [submitButton, setSubmitButton] = useState(
+        <Button
+            mode="contained"
+            onPress={() => {
+                console.log(
+                    "Subject on submit is: " +
+                        subject +
+                        " and code on submit is: " +
+                        classCode
+                );
+                addData(subject, classCode);
+            }}
+        >
+            Submit1
+        </Button>
+    );
 
     // Class dropdown list states:
     // This the the most stupid thing ever made who designed this dumb dropdown menu component
@@ -165,13 +179,13 @@ function ScheduleScreen(props) {
         console.log(currTime + " " + currTime.charAt(currTime.length - 3));
     }
 
-    function addData(subject, classCode) {
-        console.log(subject + " " + classCode);
+    function addData(subjectD, classCodeD) {
+        console.log(subjectD + " " + classCodeD);
         fetch(
             "https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?sess=1231&level=under&subject=" +
-                subject +
+                subjectD +
                 "&cournum=" +
-                classCode
+                classCodeD
         )
             .then((res) => res.text())
             .then((res) => {
@@ -183,7 +197,7 @@ function ScheduleScreen(props) {
                 );
                 const classData = arrData.map((item) => {
                     return {
-                        className: subject + " " + classCode,
+                        className: subjectD + " " + classCodeD,
                         classSection: item[1],
                         classTime: item[9],
                         classLocation: item[10],
@@ -193,16 +207,43 @@ function ScheduleScreen(props) {
                 });
                 console.log(classData);
                 setItems(classData);
-            });
+            })
+            .catch((err) => console.log(err));
+
+        setSubmitButton(
+            <Button
+                mode="contained"
+                onPress={() => {
+                    console.log(value);
+                    closeModal();
+                }}
+            >
+                Submit2
+            </Button>
+        );
     }
 
     function closeModal() {
-        console.log("closed modal");
-        setModalVisible(!scheduleModalVisible);
+        setModalVisible(false);
         setSubject("");
         setClassCode("");
-        submitToggle = true;
-        chosenClass = "";
+        setItems([]);
+        setValue(null);
+        setOpen(false);
+        setSubmitButton(
+            <Button
+                mode="contained"
+                onPress={() => addData(subject, classCode)}
+            >
+                Submit1
+            </Button>
+        );
+        console.log(
+            "Subject on close is: " +
+                subject +
+                " and code on close is: " +
+                classCode
+        );
     }
 
     return (
@@ -248,7 +289,6 @@ function ScheduleScreen(props) {
                                 style={styles.inputBox}
                                 onChangeText={(subject) => {
                                     setSubject(subject.toUpperCase());
-                                    console.log("subject is: " + subject);
                                 }}
                             />
                             <TextInput
@@ -257,7 +297,6 @@ function ScheduleScreen(props) {
                                 style={styles.inputBox}
                                 onChangeText={(classCode) => {
                                     setClassCode(classCode);
-                                    console.log("class code is: " + classCode);
                                 }}
                             />
                             <DropDownPicker
@@ -270,27 +309,18 @@ function ScheduleScreen(props) {
                                 open={open}
                                 value={value}
                                 items={items}
-                                onSelectItem={(item) => {
-                                    chosenClass = item;
+                                onSelectItem={(item1) => {
+                                    console.log("Item: " + item1);
+                                }}
+                                onChangeValue={(value) => {
+                                    console.log("Value: " + value);
                                 }}
                                 setOpen={setOpen}
                                 setValue={setValue}
                                 setItems={setItems}
                                 //closeAfterSelecting={true}
                             />
-                            <Button
-                                mode="contained"
-                                onPress={() => {
-                                    if (submitToggle) {
-                                        submitToggle = false;
-                                        addData(subject, classCode);
-                                    }
-                                    console.log(chosenClass);
-                                    closeModal();
-                                }}
-                            >
-                                Submit
-                            </Button>
+                            {submitButton}
                         </View>
                     </View>
                 </Pressable>
