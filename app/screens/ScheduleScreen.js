@@ -2,6 +2,7 @@ import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, View, Modal, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DropDownPicker from "react-native-dropdown-picker";
 import {
     Appbar,
     Avatar,
@@ -66,6 +67,8 @@ function ScheduleScreen(props) {
     const [classCode, setClassCode] = useState("");
     const [section, setSection] = useState("");
     const [classListView, setClassListView] = useState(<View />);
+    const [classValue, setClassValue] = useState(null);
+    //const[dropdownOpen, setDropdownOpen] = useState(false);
 
     const cards = [
         {
@@ -167,10 +170,34 @@ function ScheduleScreen(props) {
                 let re =
                     /TR><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><.*?><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD>/gs;
 
-                const data = [...res.matchAll(re)].map((course) =>
+                const arrData = [...res.matchAll(re)].map((course) =>
                     course.slice(1)
                 );
-                console.log(data);
+                const data = arrData.map((item) => {
+                    return {
+                        className: subject + " " + classCode,
+                        classSection: item[1],
+                        classTime: item[9],
+                        classLocation: item[10],
+                        classTeacher: item[11],
+                        classLabel: "Section: " + item[1],
+                    };
+                });
+
+                setClassListView(
+                    <DropDownPicker
+                        schema={{
+                            label: "classLabel",
+                            value: "classSection",
+                        }}
+                        open={true}
+                        value={classValue}
+                        items={data}
+                        onSelectItem={(item) => {
+                            console.log(item);
+                        }}
+                    />
+                );
             });
     }
 
@@ -234,12 +261,7 @@ function ScheduleScreen(props) {
                                     setClassCode(classCode)
                                 }
                             />
-                            <TextInput
-                                label="Section"
-                                value={section}
-                                style={styles.inputBox}
-                                onChangeText={(section) => setSection(section)}
-                            />
+                            {classListView}
                             <Button
                                 mode="contained"
                                 onPress={() => {
