@@ -90,7 +90,6 @@ function ScheduleScreen(props) {
     const [items, setItems] = useState([]);
     const [value, setValue] = useState(null);
     const [open, setOpen] = useState(false);
-    // const[dropdownOpen, setDropdownOpen] = useState(false);
 
     const cards = [
         {
