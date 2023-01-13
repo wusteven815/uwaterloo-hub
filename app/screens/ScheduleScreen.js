@@ -60,15 +60,23 @@ function renderCard({ item }) {
 }
 
 function ScheduleScreen(props) {
+    // Data states:
     const [data, setData] = useState([]);
     const MINUTE_MS = 60000;
+    let submitToggle = true;
+    let chosenClass = "";
+
+    // Add class modal states:
     const [scheduleModalVisible, setModalVisible] = useState(false);
     const [subject, setSubject] = useState("");
     const [classCode, setClassCode] = useState("");
-    const [section, setSection] = useState("");
-    const [classListView, setClassListView] = useState(<View />);
-    const [classValue, setClassValue] = useState(null);
-    //const[dropdownOpen, setDropdownOpen] = useState(false);
+
+    // Class dropdown list states:
+    // This the the most stupid thing ever made who designed this dumb dropdown menu component
+    const [items, setItems] = useState([]);
+    const [value, setValue] = useState(null);
+    const [open, setOpen] = useState(false);
+    // const[dropdownOpen, setDropdownOpen] = useState(false);
 
     const cards = [
         {
@@ -157,8 +165,8 @@ function ScheduleScreen(props) {
         console.log(currTime + " " + currTime.charAt(currTime.length - 3));
     }
 
-    function addData(subject, classCode, section) {
-        console.log(subject + " " + classCode + " " + section);
+    function addData(subject, classCode) {
+        console.log(subject + " " + classCode);
         fetch(
             "https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?sess=1231&level=under&subject=" +
                 subject +
@@ -173,7 +181,7 @@ function ScheduleScreen(props) {
                 const arrData = [...res.matchAll(re)].map((course) =>
                     course.slice(1)
                 );
-                const data = arrData.map((item) => {
+                const classData = arrData.map((item) => {
                     return {
                         className: subject + " " + classCode,
                         classSection: item[1],
@@ -183,29 +191,18 @@ function ScheduleScreen(props) {
                         classLabel: "Section: " + item[1],
                     };
                 });
-
-                setClassListView(
-                    <DropDownPicker
-                        schema={{
-                            label: "classLabel",
-                            value: "classSection",
-                        }}
-                        open={true}
-                        value={classValue}
-                        items={data}
-                        onSelectItem={(item) => {
-                            console.log(item);
-                        }}
-                    />
-                );
+                console.log(classData);
+                setItems(classData);
             });
     }
 
     function closeModal() {
+        console.log("closed modal");
         setModalVisible(!scheduleModalVisible);
         setSubject("");
         setClassCode("");
-        setSection("");
+        submitToggle = true;
+        chosenClass = "";
     }
 
     return (
@@ -249,23 +246,46 @@ function ScheduleScreen(props) {
                                 label="Subject"
                                 value={subject}
                                 style={styles.inputBox}
-                                onChangeText={(subject) =>
-                                    setSubject(subject.toUpperCase())
-                                }
+                                onChangeText={(subject) => {
+                                    setSubject(subject.toUpperCase());
+                                    console.log("subject is: " + subject);
+                                }}
                             />
                             <TextInput
                                 label="Class"
                                 value={classCode}
                                 style={styles.inputBox}
-                                onChangeText={(classCode) =>
-                                    setClassCode(classCode)
-                                }
+                                onChangeText={(classCode) => {
+                                    setClassCode(classCode);
+                                    console.log("class code is: " + classCode);
+                                }}
                             />
-                            {classListView}
+                            <DropDownPicker
+                                placeholder="Select a class section"
+                                style={styles.inputBox}
+                                schema={{
+                                    label: "classLabel",
+                                    value: "classSection",
+                                }}
+                                open={open}
+                                value={value}
+                                items={items}
+                                onSelectItem={(item) => {
+                                    chosenClass = item;
+                                }}
+                                setOpen={setOpen}
+                                setValue={setValue}
+                                setItems={setItems}
+                                //closeAfterSelecting={true}
+                            />
                             <Button
                                 mode="contained"
                                 onPress={() => {
-                                    addData(subject, classCode, section);
+                                    if (submitToggle) {
+                                        submitToggle = false;
+                                        addData(subject, classCode);
+                                    }
+                                    console.log(chosenClass);
                                     closeModal();
                                 }}
                             >
