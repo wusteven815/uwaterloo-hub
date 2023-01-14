@@ -73,6 +73,8 @@ function ScheduleScreen(props) {
 
     // Class dropdown list states:
     // This the the most stupid thing ever made who designed this dumb dropdown menu component
+    const jsdom = require("jsdom");
+    const { JSDOM } = jsdom;
     const [items, setItems] = useState([]);
     const [value, setValue] = useState(null);
     const [open, setOpen] = useState(false);
@@ -165,34 +167,32 @@ function ScheduleScreen(props) {
     }
 
     function addData(subjectD, classCodeD) {
-        console.log(subjectD + " " + classCodeD);
-        setSubmitOff(false);
-        fetch(
+        const url =
             "https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?sess=1231&level=under&subject=" +
-                subjectD +
-                "&cournum=" +
-                classCodeD
-        )
-            .then((res) => res.text())
-            .then((res) => {
-                let re =
-                    /TR><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">LEC (\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><.*?><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD>/gs;
+            subjectD +
+            "&cournum=" +
+            classCodeD;
 
-                const arrData = [...res.matchAll(re)].map((course) =>
-                    course.slice(1)
-                );
-                const classData = arrData.map((item) => {
-                    return {
-                        className: subjectD + " " + classCodeD,
-                        classSection: item[1],
-                        classTime: item[9],
-                        classLocation: item[10],
-                        classTeacher: item[11],
-                        classLabel: "Section: " + item[1],
-                    };
+        JSDOM.fromURL(url)
+            .then((dom) => {
+                const document = dom.window.document;
+                const rows = document.querySelectorAll("tr");
+                let data = [];
+                rows.forEach((row) => {
+                    const cellArr = row.querySelectorAll("td");
+                    if (cellArr[1].textContent === "LEC") {
+                        let cell = {};
+                        cell["Comp sec"] = cellArr[1].textContent;
+                        cell["Time Days/Date"] = cellArr[10].textContent;
+                        cell["Bldg Room"] = cellArr[11].textContent;
+                        cell["Instructor"] = cellArr[12].textContent;
+                        data.push(cell);
+                    }
                 });
-                console.log(classData);
-                setItems(classData);
+                console.log(data);
+            })
+            .catch((err) => {
+                console.log("Error: ${err}");
             });
     }
 
