@@ -1,4 +1,5 @@
 import moment from "moment";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, View, Modal, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -76,6 +77,9 @@ function ScheduleScreen(props) {
     const [items, setItems] = useState([]);
     const [value, setValue] = useState(null);
     const [open, setOpen] = useState(false);
+
+    const axios = require("axios").default;
+    const cheerio = require("cheerio");
 
     const cards = [
         {
@@ -165,34 +169,45 @@ function ScheduleScreen(props) {
     }
 
     function addData(subjectD, classCodeD) {
-        console.log(subjectD + " " + classCodeD);
-        setSubmitOff(false);
-        fetch(
+        const url =
             "https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?sess=1231&level=under&subject=" +
-                subjectD +
-                "&cournum=" +
-                classCodeD
-        )
-            .then((res) => res.text())
+            subjectD +
+            "&cournum=" +
+            classCodeD;
+        console.log(url);
+        setSubmitOff(false);
+        axios
+            .get(url, { validateStatus: (status) => status === 200 })
             .then((res) => {
-                let re =
-                    /TR><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">LEC (\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><.*?><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(\d+) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD><TD ALIGN="center">(.*?) *<\/TD>/gs;
-
-                const arrData = [...res.matchAll(re)].map((course) =>
-                    course.slice(1)
-                );
-                const classData = arrData.map((item) => {
-                    return {
-                        className: subjectD + " " + classCodeD,
-                        classSection: item[1],
-                        classTime: item[9],
-                        classLocation: item[10],
-                        classTeacher: item[11],
-                        classLabel: "Section: " + item[1],
-                    };
+                const html = res.data;
+                const $ = cheerio.load(html);
+                let dataArr = [];
+                $("tr").each(function () {
+                    const cellArr = $(this).find("td");
+                    const firstCell = cellArr.eq(1).text();
+                    const secondCell = cellArr.eq(2).text();
+                    const locationCell = cellArr.eq(11).text();
+                    const timeDateCell = cellArr.eq(10).text();
+                    if (
+                        (firstCell.includes("LEC") ||
+                            firstCell.includes("LEC")) &&
+                        secondCell.includes("UW") &&
+                        locationCell != ""
+                    ) {
+                        let cell = {};
+                        cell["name"] = subjectD + " " + classCodeD;
+                        cell["section"] = firstCell;
+                        cell["time"] = timeDateCell.substring(0, 11);
+                        cell["weekdays"] = timeDateCell.slice(11);
+                        cell["location"] = locationCell;
+                        dataArr.push(cell);
+                    }
                 });
-                console.log(classData);
-                setItems(classData);
+                console.log(dataArr);
+                setItems(dataArr);
+            })
+            .catch((err) => {
+                console.log("Steven this is very unlucky: " + err);
             });
     }
 
@@ -274,17 +289,14 @@ function ScheduleScreen(props) {
                                 placeholder="Select a class section"
                                 style={styles.inputBox}
                                 schema={{
-                                    label: "classLabel",
-                                    value: "classSection",
+                                    label: "section",
+                                    value: "section",
                                 }}
                                 open={open}
                                 value={value}
                                 items={items}
                                 onSelectItem={(item) => {
-                                    console.log(item);
-                                }}
-                                onChangeValue={(value) => {
-                                    console.log("Value: " + value);
+                                    classObject = item;
                                 }}
                                 setOpen={setOpen}
                                 setValue={setValue}
@@ -310,18 +322,19 @@ function ScheduleScreen(props) {
                                         addData(subject, classCode);
                                     }}
                                 >
-                                    Submit1
+                                    Search Class
                                 </Button>
                                 <Button
                                     mode="contained"
                                     disabled={submitOff}
                                     onPress={() => {
-                                        console.log(value);
+                                        console.log(items);
+                                        console.log("value: " + value);
                                         console.log(classObject);
                                         closeModal();
                                     }}
                                 >
-                                    Submit2
+                                    Add Class
                                 </Button>
                             </View>
                         </View>
